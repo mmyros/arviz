@@ -31,7 +31,8 @@ class NumPyroConverter:
         coords=None,
         dims=None,
         pred_dims=None,
-        num_chains=1
+            num_chains=1,
+            observed_vars=None
     ):
         """Convert NumPyro data into an InferenceData object.
 
@@ -264,13 +265,16 @@ class NumPyroConverter:
         """Convert predictions_constant_data to xarray."""
         return self.convert_constant_data_to_xarray(self.predictions_constant_data, self.pred_dims)
 
-    def to_inference_data(self):
+    def to_inference_data(self, observed_vars=None):
         """Convert all available data to an InferenceData object.
 
         Note that if groups can not be created (i.e., there is no `trace`, so
         the `posterior` and `sample_stats` can not be extracted), then the InferenceData
         will not have those groups.
         """
+        if not(observed_data is None):
+            self.observed_data_to_xarray()[observed_vars]
+            import pdb;pdb.set_trace()
         return InferenceData(
             **{
                 "posterior": self.posterior_to_xarray(),
@@ -279,7 +283,7 @@ class NumPyroConverter:
                 "posterior_predictive": self.posterior_predictive_to_xarray(),
                 "predictions": self.predictions_to_xarray(),
                 **self.priors_to_xarray(),
-                "observed_data": self.observed_data_to_xarray(),
+                "observed_data": observed_data,
                 "constant_data": self.constant_data_to_xarray(),
                 "predictions_constant_data": self.predictions_constant_data_to_xarray(),
             }
@@ -297,7 +301,8 @@ def from_numpyro(
     coords=None,
     dims=None,
     pred_dims=None,
-    num_chains=1
+        num_chains=1,
+        observed_vars=None
 ):
     """Convert NumPyro data into an InferenceData object.
 
@@ -338,4 +343,4 @@ def from_numpyro(
         dims=dims,
         pred_dims=pred_dims,
         num_chains=num_chains,
-    ).to_inference_data()
+    ).to_inference_data(observed_vars=None)
